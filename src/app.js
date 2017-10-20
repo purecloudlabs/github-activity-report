@@ -99,24 +99,64 @@ function loadApiData() {
 
 	log.profile('repo list');
 	github.getOrgRepos('mypurecloud')
+		// .then((data) => {
+		// 	log.profile('repo list');
+		// 	let promises = [];
+
+		// 	// Get pull requests for each repo
+		// 	log.info('Getting repo commits, issues, PRs...');
+		// 	log.profile('repo data');
+		// 	_.forEach(data, (repo) => {
+		// 		repos.push(repo);
+		// 		promises.push(loadRepositoryPullRequests(repo));
+		// 		promises.push(loadRepositoryCommits(repo));
+		// 		promises.push(loadRepositoryIssues(repo));
+		// 	});
+
+		// 	return Promise.all(promises);
+		// })
 		.then((data) => {
 			log.profile('repo list');
 			let promises = [];
 
 			// Get pull requests for each repo
-			log.info('Getting repo commits, issues, PRs...');
-			log.profile('repo data');
+			log.info('Getting PRs...');
+			log.profile('repo prs');
 			_.forEach(data, (repo) => {
 				repos.push(repo);
 				promises.push(loadRepositoryPullRequests(repo));
+			});
+
+			return Promise.all(promises);
+		})
+		.then(() => {
+			log.profile('repo prs');
+			let promises = [];
+
+			// Get pull requests for each repo
+			log.info('Getting repo commits...');
+			log.profile('repo commits');
+			_.forEach(repos, (repo) => {
 				promises.push(loadRepositoryCommits(repo));
+			});
+
+			return Promise.all(promises);
+		})
+		.then(() => {
+			log.profile('repo commits');
+			let promises = [];
+
+			// Get pull requests for each repo
+			log.info('Getting repo issues...');
+			log.profile('repo issues');
+			_.forEach(repos, (repo) => {
 				promises.push(loadRepositoryIssues(repo));
 			});
 
 			return Promise.all(promises);
 		})
 		.then(() => {
-			log.profile('repo data');
+			log.profile('repo issues');
 			let promises = [];
 
 			log.info('Getting PR comments and commits...');
