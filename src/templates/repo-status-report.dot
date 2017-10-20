@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title></title>
+
+	<link href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
+
+	<style type="text/css">
+		td {
+			vertical-align: middle !important;
+		}
+
+		span[class^=repo-status-] {
+			margin: 1pt auto;
+			border-radius: 4pt;
+			padding: 1pt;
+			width: 65pt;
+			display: block;
+			text-align: center;
+		}
+
+		.repo-status-active {
+			background: #2fbc52;
+			color: #ffffff;
+		}
+
+		.repo-status-idle {
+			background: #8dd6a0;
+			color: #222222;
+		}
+
+		.repo-status-stagnant {
+			background: #b9bc2f;
+			color: #ffffff;
+		}
+
+		.repo-status-inactive {
+			background: #bc2f2f;
+			color: #ffffff;
+		}
+
+		span[class^=repo-badge-] {
+	    margin: 1pt 3pt;
+	    border-radius: 4pt;
+	    padding: 1pt;
+	    display: inline-block;
+	    text-align: center;
+	    padding: 0pt 3pt;
+		}
+
+		.repo-badge-private {
+			background-color: #f9d77f;
+		}
+
+		.repo-badge-fork {
+			background-color: #c3d6f7;
+		}
+
+		.report-footer {
+			background-color: #eee;
+		}
+
+		.report-footer-content {
+			padding: 15pt;
+    	text-align: center;
+		}
+
+		.table-clear td {
+			border: none !important;
+		}
+	</style>
+</head>
+<body>
+
+	<div class="jumbotron jumbotron-fluid">
+		<div class="container">
+			<h1 class="display-3">Repo Status Report</h1>
+			<p>An overview of all repos</p>
+		</div>
+	</div>
+
+	<div class="container">
+		<div class="row">
+			<div class="col-sm-12">
+				<table class="table table-clear">
+					<tr>
+						<td class="text-center"><span class="repo-status-active">Active</span> Last commit within 30 days</td>
+						<td class="text-center"><span class="repo-status-idle">Idle</span> Last commit within 180 days</td>
+						<td class="text-center"><span class="repo-status-stagnant">Stagnant</span> Last commit within 365 days</td>
+						<td class="text-center"><span class="repo-status-inactive">Inactive</span> Last commit older than 1 year</td>
+					</tr>
+				</table>
+			</div>
+		</div>
+	</div>
+
+	<div class="container">
+		<div class="row">
+			<div class="col-sm-12">
+				<table class="table table-striped">
+					<tr>
+						<th>Name</th>
+						<th>Age</th>
+						<th>Last Commit</th>
+						<th class="text-center">Open Issues</th>
+						<th class="text-center">Open PRs</th>
+						<th class="text-center">Status</th>
+					</tr>{{~ it.repos :repo }}
+					<tr>
+						<td title="{{= repo.description }}"><a href="{{= repo.html_url }}" target="_blank">{{= repo.name }}</a>{{? repo.private }}<span class="repo-badge-private">Private</span>{{?}}{{? repo.fork }}<span class="repo-badge-fork">Fork</span>{{?}}</td>
+						<td>{{= repo.age }}</td>
+						<td title="{{= repo.lastCommit.commit.message }}"><a href="{{= repo.lastCommit.html_url }}" target="_blank">{{= repo.lastCommitAge }}</a> by <a href="mailto:{{= repo.lastCommit.commit.author.email }}" target="_blank">{{= repo.lastCommit.commit.author.name }}</a></td>
+						<td class="text-center">{{? repo.has_issues}}<a href="{{= repo.issuesUrl }}" target="_blank">{{= repo.issueCount }}</a>{{?? true }}{{= repo.issueCount }}{{?}}</td> 
+						<td class="text-center"><a href="{{= repo.pullRequestsUrl }}" target="_blank">{{= repo.pullRequestCount }}</a></td>
+						<td><span class="repo-status-{{= repo.status }}">{{= repo.statusDisplay }}</span></td>
+					</tr>{{~}}
+				</table>
+			</div>
+		</div>
+	</div>
+
+	<div class="container-fluid report-footer">
+		<div class="row">
+			<div class="col-sm-12">
+				<div class="container">
+					<div class="row">
+						<div class="col-sm-12 report-footer-content">
+							Report generated at {{= it.generatedTimestamp }}<br />
+							Data cached at {{= it.dataTimestamp }}
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+
+</body>
+</html>
