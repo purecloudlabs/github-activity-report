@@ -56,6 +56,7 @@ loadData()
 	})
 	.catch((err) => {
 		log.error(err);
+		process.exitCode = 666;
 	});
 
 
