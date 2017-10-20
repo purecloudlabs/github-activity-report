@@ -1,10 +1,61 @@
 <!DOCTYPE html>
 <html>
 <head>
-	<title>Github Repo Status Report</title>
+	<title></title>
 
-	<link href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
+	<!-- <link href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous"> -->
 
+	<!-- bootstrap 3.3.7 -->
+	<style type="text/css">
+		html, body {
+			padding: 0;
+			margin: 0;
+		}
+
+		div, p {
+			font-family: Arial, "Helvetica Neue", Helvetica, sans-serif;
+			font-size: 14px;
+			font-style: normal;
+			font-variant: normal;
+			font-weight: 400;
+			line-height: 20px;
+		}
+
+		table {
+			width: 100%;
+			border-spacing: 0;
+			border-collapse: collapse;
+		}
+
+		td {
+			border: 1px solid #eee;
+			padding: 1pt 3pt;
+		}
+
+		th {
+			text-align: left;
+		}
+
+		h1 { font-size: 36px; }
+
+		.container {
+			padding-right: 15px;
+			padding-left: 15px;
+			margin-right: auto;
+			margin-left: auto;
+		}
+
+		.text-center {
+			text-align: center;
+		}
+
+		.jumbotron {
+			width: 100%;
+			padding: 30pt;
+			color: inherit;
+			background-color: #eee;
+		}
+	</style>
 	<style type="text/css">
 		td {
 			vertical-align: middle !important;
@@ -58,6 +109,7 @@
 
 		.report-footer {
 			background-color: #eee;
+			margin-top: 8pt;
 		}
 
 		.report-footer-content {
@@ -100,7 +152,6 @@
 				<table class="table table-striped">
 					<tr>
 						<th>Name</th>
-						<th>Age</th>
 						<th>Last Commit</th>
 						<th class="text-center">Open Issues</th>
 						<th class="text-center">Open PRs</th>
@@ -108,7 +159,6 @@
 					</tr>{{~ it.repos :repo }}
 					<tr>
 						<td title="{{= repo.description }}"><a href="{{= repo.html_url }}" target="_blank">{{= repo.name }}</a>{{? repo.private }}<span class="repo-badge-private">Private</span>{{?}}{{? repo.fork }}<span class="repo-badge-fork">Fork</span>{{?}}</td>
-						<td>{{= repo.age }}</td>
 						<td title="{{= repo.lastCommit.commit.message }}"><a href="{{= repo.lastCommit.html_url }}" target="_blank">{{= repo.lastCommitAge }}</a> by <a href="mailto:{{= repo.lastCommit.commit.author.email }}" target="_blank">{{= repo.lastCommit.commit.author.name }}</a></td>
 						<td class="text-center">{{? repo.has_issues}}<a href="{{= repo.issuesUrl }}" target="_blank">{{= repo.issueCount }}</a>{{?? true }}{{= repo.issueCount }}{{?}}</td> 
 						<td class="text-center"><a href="{{= repo.pullRequestsUrl }}" target="_blank">{{= repo.pullRequestCount }}</a></td>

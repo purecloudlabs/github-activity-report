@@ -49,10 +49,8 @@ loadData()
 			dataTimestamp: repoDataTimestamp.tz('US/Eastern').format('LLLL z (\\G\\M\\TZ)')
 		};
 
-		log.profile('write repo-status-report');
-		let html = executeTemplate(getTemplate('repo-status-report'), data, templateFunctions);
-		fs.writeFileSync(path.join(OUTPUT_PATH, 'repo-status-report.html'), html);
-		log.profile('write repo-status-report');
+		templateFullService('repo-status-report', data, templateFunctions);
+		templateFullService('repo-status-report-email', data, templateFunctions);
 	})
 	.catch((err) => {
 		log.error(err);
@@ -336,6 +334,12 @@ function loadPullRequestComments(pullRequest) {
 	return deferred.promise;
 }
 
+function templateFullService(templateName, data, defs) {
+	log.profile(`template: ${templateName}`);
+	let html =  executeTemplate(getTemplate(templateName), data, defs);
+	fs.writeFileSync(path.join(OUTPUT_PATH, `${templateName}.html`), html);
+	log.profile(`template: ${templateName}`);
+}
 
 
 function executeTemplate(templateString, data, defs) {
