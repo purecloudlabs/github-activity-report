@@ -1,11 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-	<title></title>
-
-	<!-- <link href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous"> -->
-
-	<!-- bootstrap 3.3.7 -->
+	<title>Github Repo Status Report</title>
 	<style type="text/css">
 		html, body {
 			padding: 0;
@@ -159,9 +155,9 @@
 					</tr>{{~ it.repos :repo }}
 					<tr>
 						<td title="{{= repo.description }}"><a href="{{= repo.html_url }}" target="_blank">{{= repo.name }}</a>{{? repo.private }}<span class="repo-badge-private">Private</span>{{?}}{{? repo.fork }}<span class="repo-badge-fork">Fork</span>{{?}}</td>
-						<td title="{{= repo.lastCommit.commit.message }}"><a href="{{= repo.lastCommit.html_url }}" target="_blank">{{= repo.lastCommitAge }}</a> by <a href="mailto:{{= repo.lastCommit.commit.author.email }}" target="_blank">{{= repo.lastCommit.commit.author.name }}</a></td>
-						<td class="text-center">{{? repo.has_issues}}<a href="{{= repo.issuesUrl }}" target="_blank">{{= repo.issueCount }}</a>{{?? true }}{{= repo.issueCount }}{{?}}</td> 
-						<td class="text-center"><a href="{{= repo.pullRequestsUrl }}" target="_blank">{{= repo.pullRequestCount }}</a></td>
+						<td title="{{= repo.lastCommit.commit.message }}"><a href="{{= repo.lastCommit.html_url }}" target="_blank">{{= repo.lastCommitAge }}</a> by <a href="mailto:{{= repo.lastCommit.commit.author.email }}" target="_blank">{{= repo.lastCommit.commit.author.name }}</td>
+						<td class="text-center">{{= repo.issueCount }}</td> 
+						<td class="text-center">{{= repo.pullRequestCount }}</td>
 						<td><span class="repo-status-{{= repo.status }}">{{= repo.statusDisplay }}</span></td>
 					</tr>{{~}}
 				</table>
