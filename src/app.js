@@ -68,9 +68,9 @@ function loadData() {
 	
 	if (fs.existsSync(repoDataPath) && fs.existsSync(repoDataTimestampPath)) {
 		repoDataTimestamp = moment(fs.readFileSync(repoDataTimestampPath, 'utf8'));
-		let cachedHours = moment().diff(repoDataTimestamp, 'minutes');
-		log.debug(`Cached data is ${cachedHours} minutes old`);
-		cachedDataExists = cachedHours < 12 * 60;
+		let cachedMinutes = moment().diff(repoDataTimestamp, 'minutes');
+		log.debug(`Cached data is ${cachedMinutes} minutes old`);
+		cachedDataExists = cachedMinutes < 30;
 		if (!cachedDataExists)
 			log.info('Cached data exists, but is out of date.');
 	}
@@ -97,27 +97,10 @@ function loadApiData() {
 
 	log.profile('repo list');
 	github.getOrgRepos('mypurecloud')
-		// .then((data) => {
-		// 	log.profile('repo list');
-		// 	let promises = [];
-
-		// 	// Get pull requests for each repo
-		// 	log.info('Getting repo commits, issues, PRs...');
-		// 	log.profile('repo data');
-		// 	_.forEach(data, (repo) => {
-		// 		repos.push(repo);
-		// 		promises.push(loadRepositoryPullRequests(repo));
-		// 		promises.push(loadRepositoryCommits(repo));
-		// 		promises.push(loadRepositoryIssues(repo));
-		// 	});
-
-		// 	return Promise.all(promises);
-		// })
 		.then((data) => {
 			log.profile('repo list');
 			let promises = [];
 
-			// Get pull requests for each repo
 			log.info('Getting PRs...');
 			log.profile('repo prs');
 			_.forEach(data, (repo) => {
@@ -131,7 +114,6 @@ function loadApiData() {
 			log.profile('repo prs');
 			let promises = [];
 
-			// Get pull requests for each repo
 			log.info('Getting repo commits...');
 			log.profile('repo commits');
 			_.forEach(repos, (repo) => {
@@ -144,7 +126,6 @@ function loadApiData() {
 			log.profile('repo commits');
 			let promises = [];
 
-			// Get pull requests for each repo
 			log.info('Getting repo issues...');
 			log.profile('repo issues');
 			_.forEach(repos, (repo) => {
@@ -157,11 +138,10 @@ function loadApiData() {
 			log.profile('repo issues');
 			let promises = [];
 
-			log.info('Getting PR comments and commits...');
-			log.profile('pr data');
+			log.info('Getting PR comments...');
+			log.profile('pr comments');
 			for (var i = 0; i < repos.length; i++) {
 				repos[i].pullRequests.forEach((pullRequest) => {
-					promises.push(loadPullRequestCommits(pullRequest));
 					promises.push(loadPullRequestComments(pullRequest));
 				});
 			}
@@ -169,7 +149,21 @@ function loadApiData() {
 			return Promise.all(promises);
 		})
 		.then(() => {
-			log.profile('pr data');
+			log.profile('repo comments');
+			let promises = [];
+
+			log.info('Getting PR commits...');
+			log.profile('pr commits');
+			for (var i = 0; i < repos.length; i++) {
+				repos[i].pullRequests.forEach((pullRequest) => {
+					promises.push(loadPullRequestCommits(pullRequest));
+				});
+			}
+
+			return Promise.all(promises);
+		})
+		.then(() => {
+			log.profile('pr commits');
 			log.debug(`Request Count: ${api.getRequestCount()}`);
 			log.info('Generating repo meta properties...');
 			repos.forEach((repo) => {
