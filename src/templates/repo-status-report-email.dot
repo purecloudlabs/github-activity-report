@@ -34,11 +34,15 @@
 
 		h1 { font-size: 36px; }
 
+		a, a:hover, a:visited, a:active {
+			color: #FF4F1F;
+			text-decoration: none;
+		}
+
 		.container {
 			padding-right: 15px;
 			padding-left: 15px;
-			margin-right: auto;
-			margin-left: auto;
+			margin: 12pt auto;
 		}
 
 		.text-center {
@@ -47,9 +51,10 @@
 
 		.jumbotron {
 			width: 100%;
-			padding: 30pt;
+			padding: 6pt;
 			color: inherit;
 			background-color: #eee;
+			margin: 0 0 8pt 0;
 		}
 	</style>
 	<style type="text/css">
@@ -57,7 +62,11 @@
 			vertical-align: middle !important;
 		}
 
-		span[class^=repo-status-] {
+
+		.repo-status-active,
+		.repo-status-idle,
+		.repo-status-stagnant,
+		.repo-status-inactive {
 			margin: 1pt auto;
 			border-radius: 4pt;
 			padding: 1pt;
@@ -86,7 +95,10 @@
 			color: #ffffff;
 		}
 
-		span[class^=repo-badge-] {
+		.repo-badge-private, 
+		.repo-badge-fork, 
+		.repo-badge-footer,
+		.repo-badge-footer-content  {
 	    margin: 1pt 3pt;
 	    border-radius: 4pt;
 	    padding: 1pt;
