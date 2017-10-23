@@ -10,6 +10,7 @@ const Q = require('q');
 const github = require('./github-helpers');
 const DATA_CACHE_PATH = path.join(__dirname, '../cache');
 const OUTPUT_PATH = path.join(__dirname, '../output');
+const GEN_TIMESTAMP = moment().format('YMMDD-HHmmss');
 
 
 
@@ -27,6 +28,7 @@ const templateFunctions = {
 };
 
 fs.ensureDirSync(DATA_CACHE_PATH);
+fs.removeSync(OUTPUT_PATH);
 fs.ensureDirSync(OUTPUT_PATH);
 
 
@@ -49,8 +51,14 @@ loadData()
 			dataTimestamp: repoDataTimestamp.tz('US/Eastern').format('LLLL z (\\G\\M\\TZ)')
 		};
 
-		templateFullService('repo-status-report', data, templateFunctions);
+		templateFullService({ source: 'repo-status-report', dest: `s3/${GEN_TIMESTAMP}/repo-status-report` }, data, templateFunctions);
 		templateFullService('repo-status-report-email', data, templateFunctions);
+
+		// Copy S3 dir to latest
+		let outSource = `${OUTPUT_PATH}/s3/${GEN_TIMESTAMP}`;
+		let outDest = `${OUTPUT_PATH}/s3/latest`;
+		log.info(`Copying s3 output: ${outSource} -> ${outDest}`);
+		fs.copySync(outSource, outDest);
 	})
 	.catch((err) => {
 		log.error(err);
@@ -329,10 +337,20 @@ function loadPullRequestComments(pullRequest) {
 }
 
 function templateFullService(templateName, data, defs) {
-	log.profile(`template: ${templateName}`);
-	let html =  executeTemplate(getTemplate(templateName), data, defs);
-	fs.writeFileSync(path.join(OUTPUT_PATH, `${templateName}.html`), html);
-	log.profile(`template: ${templateName}`);
+	if (typeof(templateName) !== 'object') {
+		templateName = {
+			source: templateName,
+			dest: templateName
+		};
+	}
+
+	log.profile(`template: ${templateName.source}`);
+	let html =  executeTemplate(getTemplate(templateName.source), data, defs);
+	let destPath = path.join(OUTPUT_PATH, `${templateName.dest}.html`);
+	fs.ensureDirSync(path.dirname(destPath));
+	fs.writeFileSync(destPath, html);
+	log.debug('File written to ', destPath);
+	log.profile(`template: ${templateName.source}`);
 }
 
 
