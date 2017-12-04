@@ -6,6 +6,7 @@ const log = new (require('lognext'))('activity report');
 const moment = require('moment-timezone');
 const path = require('path');
 const Q = require('q');
+const request = require('request-promise');
 
 const github = require('./github-helpers');
 const DATA_CACHE_PATH = path.join(__dirname, '../cache');
@@ -24,7 +25,10 @@ var repoDataTimestamp = '';
 
 const templateFunctions = {
 	getMoment: (str) => { return moment(str); },
-	diff: (timestamp) => { return moment.duration(moment().diff(timestamp)); }
+	diff: (timestamp) => { return moment.duration(moment().diff(timestamp)); },
+	loadPartial: (file) => {
+		return fs.readFileSync(path.join(__dirname, 'templates/partials', file), 'utf-8');
+	}
 };
 
 fs.ensureDirSync(DATA_CACHE_PATH);
@@ -51,6 +55,7 @@ loadData()
 			dataTimestamp: repoDataTimestamp.tz('US/Eastern').format('LLLL z (\\G\\M\\TZ)')
 		};
 
+		// Execute templates
 		templateFullService({ source: 'repo-status-report', dest: `s3/${GEN_TIMESTAMP}/repo-status-report` }, data, templateFunctions);
 		templateFullService('repo-status-report-email', data, templateFunctions);
 
@@ -148,7 +153,7 @@ function loadApiData() {
 
 			log.info('Getting PR comments...');
 			log.profile('pr comments');
-			for (var i = 0; i < repos.length; i++) {
+			for (let i = 0; i < repos.length; i++) {
 				repos[i].pullRequests.forEach((pullRequest) => {
 					promises.push(loadPullRequestComments(pullRequest));
 				});
@@ -162,16 +167,26 @@ function loadApiData() {
 
 			log.info('Getting PR commits...');
 			log.profile('pr commits');
-			for (var i = 0; i < repos.length; i++) {
+			for (let i = 0; i < repos.length; i++) {
 				repos[i].pullRequests.forEach((pullRequest) => {
 					promises.push(loadPullRequestCommits(pullRequest));
 				});
+			}
+		})
+		.then(() => {
+			log.profile('pr commits');
+			let promises = [];
+
+			log.info('Checking OSS index opt in...');
+			log.profile('ossindex');
+			for (let i = 0; i < repos.length; i++) {
+				promises.push(checkOssFile(repos[i]));
 			}
 
 			return Promise.all(promises);
 		})
 		.then(() => {
-			log.profile('pr commits');
+			log.profile('ossindex');
 			log.debug(`Request Count: ${api.getRequestCount()}`);
 			log.info('Generating repo meta properties...');
 			repos.forEach((repo) => {
@@ -189,6 +204,32 @@ function loadApiData() {
 		.catch((err) => {
 			log.error(err);
 			deferred.reject(err);
+		});
+
+	return deferred.promise;
+}
+
+function checkOssFile(repo) {
+	var deferred = Q.defer();
+
+	let ossFile = repo.html_url + '/blob/master/ossindex.json';
+	request.get({ 
+		uri: ossFile
+	})
+		.then(() => {
+			log.debug('got ossindex data for ' + ossFile);
+			repo.isOss = true;
+			deferred.resolve();
+		})
+		.catch((err) => {
+			repo.isOss = false;
+			if (err.statusCode == 404) {
+				log.warn('Failed to get ossindex data for ' + ossFile);
+				deferred.resolve();
+			} else {
+				log.error(err);
+				deferred.resolve();
+			}
 		});
 
 	return deferred.promise;
