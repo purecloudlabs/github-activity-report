@@ -1,0 +1,71 @@
+		td {
+			vertical-align: middle !important;
+		}
+
+		a, a:hover, a:visited, a:active {
+			color: #FF4F1F;
+			text-decoration: none;
+		}
+
+		span[class^=repo-status-] {
+			margin: 1pt auto;
+			border-radius: 4pt;
+			padding: 1pt;
+			width: 65pt;
+			display: block;
+			text-align: center;
+		}
+
+		.repo-status-active {
+			background: #2fbc52;
+			color: #ffffff;
+		}
+
+		.repo-status-idle {
+			background: #8dd6a0;
+			color: #222222;
+		}
+
+		.repo-status-stagnant {
+			background: #b9bc2f;
+			color: #ffffff;
+		}
+
+		.repo-status-inactive {
+			background: #bc2f2f;
+			color: #ffffff;
+		}
+
+		span[class^=repo-badge-] {
+	    margin: 1pt 3pt;
+	    border-radius: 4pt;
+	    padding: 1pt;
+	    display: inline-block;
+	    text-align: center;
+	    padding: 0pt 3pt;
+		}
+
+		.repo-badge-private {
+			background-color: #f9d77f;
+		}
+
+		.repo-badge-fork {
+			background-color: #c3d6f7;
+		}
+
+		.repo-badge-oss {
+			background-color: #bbe7ed;
+		}
+
+		.report-footer {
+			background-color: #eee;
+		}
+
+		.report-footer-content {
+			padding: 15pt;
+    	text-align: center;
+		}
+
+		.table-clear td {
+			border: none !important;
+		}
