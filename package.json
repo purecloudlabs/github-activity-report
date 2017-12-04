@@ -17,6 +17,8 @@
     "lodash": "^4.17.4",
     "lognext": "0.0.3",
     "moment-timezone": "^0.5.13",
-    "q": "^1.5.0"
+    "q": "^1.5.0",
+    "request": "^2.83.0",
+    "request-promise": "^4.2.2"
   }
 }
