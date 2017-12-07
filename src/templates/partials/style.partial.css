@@ -69,3 +69,24 @@
 		.table-clear td {
 			border: none !important;
 		}
+
+		.glyphicon-ok-circle {
+			color: #2fbc52;
+		}
+
+		.glyphicon-remove-circle {
+			color: #bc2f2f;
+		}
+
+		.sla-failed-text {
+			color: #bc2f2f;
+			margin-left: 3pt;
+		}
+
+		.icon-pad-right {
+			margin-right: 3pt;
+		}
+
+		.icon-pad-left {
+			margin-left: 3pt;
+		}

@@ -57,6 +57,7 @@ loadData()
 
 		// Execute templates
 		templateFullService({ source: 'repo-status-report', dest: `s3/${GEN_TIMESTAMP}/repo-status-report` }, data, templateFunctions);
+		templateFullService({ source: 'repo-watchlist', dest: `s3/${GEN_TIMESTAMP}/repo-watchlist` }, data, templateFunctions);
 		templateFullService('repo-status-report-email', data, templateFunctions);
 
 		// Copy S3 dir to latest
@@ -191,6 +192,7 @@ function loadApiData() {
 			log.info('Generating repo meta properties...');
 			repos.forEach((repo) => {
 				generateRepositoryMetaProperties(repo);
+				checkRepositorySla(repo);
 			});
 		})
 		.then(() => {
@@ -217,14 +219,12 @@ function checkOssFile(repo) {
 		uri: ossFile
 	})
 		.then(() => {
-			log.debug('got ossindex data for ' + ossFile);
 			repo.isOss = true;
 			deferred.resolve();
 		})
 		.catch((err) => {
 			repo.isOss = false;
 			if (err.statusCode == 404) {
-				log.warn('Failed to get ossindex data for ' + ossFile);
 				deferred.resolve();
 			} else {
 				log.error(err);
@@ -282,6 +282,86 @@ function generateRepositoryMetaProperties(repo) {
 	repo.pullRequestsUrl = path.join(repo.html_url, 'pulls');
 	if (repo.has_issues)
 		repo.issuesUrl = path.join(repo.html_url, 'issues');
+}
+
+function checkRepositorySla(repo) {
+	repo.watchlist = [];
+
+	// Check issues
+	repo.issues.forEach((issue) => {
+		let issueLastActivity = moment().diff(issue.updated_at, 'days');
+		let issueAge = moment().diff(issue.created_at, 'days');
+
+		// Default to values of false to indicate SLA not met
+		issue.sla = {
+			initialResponse: { met: false, age: issueAge },
+			activity: { met: false, age: issueLastActivity },
+			resolution: { met: false, age: issueAge }
+		};
+		
+		// Age less than 3 days or has updates
+		if (issueAge <= 3 || issue.created_at != issue.updated_at) {
+			issue.sla.initialResponse.met = true;
+		}
+
+		// Activity within last 5 days
+		if (issueLastActivity <= 5) {
+			issue.sla.activity.met = true;
+		}
+
+		// Age less than 4 weeks
+		if (issueAge < 28) {
+			issue.sla.resolution.met = true;
+		}
+
+		// If any checks failed, add to watchlist
+		if (issue.sla.initialResponse.met === false || 
+				issue.sla.activity.met === false || 
+				issue.sla.resolution.met === false) {
+			issue.watchlistType = 'issue';
+			repo.watchlist.push(issue);
+		}
+	});
+
+	// Check PRs
+	repo.pullRequests.forEach((pr) => {
+		let prLastActivity = moment().diff(pr.updated_at, 'days');
+		let prAge = moment().diff(pr.created_at, 'days');
+
+		// Default to values of false to indicate SLA not met
+		pr.sla = {
+			initialResponse: { met: false, age: prAge },
+			activity: { met: false, age: prLastActivity },
+			resolution: { met: false, age: prAge }
+		};
+		
+		// Age less than 3 days or has updates
+		if (prAge <= 3 || pr.created_at != pr.updated_at) {
+			pr.sla.initialResponse.met = true;
+		}
+
+		// Activity within last 5 days
+		if (prLastActivity <= 5) {
+			pr.sla.activity.met = true;
+		}
+
+		// Age less than 4 weeks
+		if (prAge < 28) {
+			pr.sla.resolution.met = true;
+		}
+
+		// If any checks failed, add to watchlist
+		if (pr.sla.initialResponse.met === false || 
+				pr.sla.activity.met === false || 
+				pr.sla.resolution.met === false) {
+			pr.watchlistType = 'pull request';
+			repo.watchlist.push(pr);
+		}
+	});
+
+	// Clear watchlist arrays if empty
+	// if (repo.watchlist.issues.length === 0) repo.watchlist.issues = undefined;
+	// if (repo.watchlist.pullRequests.length === 0) repo.watchlist.pullRequests = undefined;
 }
 
 function loadRepositoryIssues(repo) {
