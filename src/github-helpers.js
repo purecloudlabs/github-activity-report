@@ -7,7 +7,7 @@ const Q = require('q');
 
 module.exports = {
 	// Recursively gets events for the given range
-	getEvents: function (username, org, rangeStart, rangeEnd, page = 1, events = [], deferred = Q.defer()) {
+	getUserOrganizationEvents: function (username, org, rangeStart, rangeEnd, page = 1, events = [], deferred = Q.defer()) {
 		let self = this;
 		log.debug(`Getting events page ${page}`);
 		api.activity.events.getUserOrganizationEvents(username, org, { page: page })
@@ -20,7 +20,44 @@ module.exports = {
 				let lastEventTimestamp = moment(events[events.length - 1].created_at);
 
 				if (page < 10 && lastEventTimestamp > rangeStart) {
-					self.getEvents(username, org, rangeStart, rangeEnd, page + 1, events, deferred);
+					self.getUserOrganizationEvents(username, org, rangeStart, rangeEnd, page + 1, events, deferred);
+				} else {
+					var finalEvents = [];
+					// Prune results
+					for (let i=0; i<events.length; i++) {
+						let eventTimestamp = moment(events[i].created_at);
+						if (rangeStart <= eventTimestamp && eventTimestamp <= rangeEnd)
+							finalEvents.push(events[i]);
+					}
+
+					log.debug(`${events.length} events pruned to ${finalEvents.length}`);
+
+					deferred.resolve(finalEvents);
+				}
+			})
+			.catch(function(err) {
+				log.error(err);
+				deferred.reject(err);
+			});
+
+		return deferred.promise;
+	},
+
+	// Recursively gets events for the given range
+	getOrganizationEvents: function (org, rangeStart, rangeEnd, page = 1, events = [], deferred = Q.defer()) {
+		let self = this;
+		log.debug(`Getting events page ${page}`);
+		api.activity.events.getOrganizationEvents(org, { page: page })
+			.then(function(res) {
+				events = events.concat(res);
+
+				rangeStart = moment.isMoment(rangeStart) ? rangeStart : moment().subtract(1, 'year');
+				rangeEnd = moment.isMoment(rangeEnd) ? rangeEnd : moment().add(1, 'year');
+
+				let lastEventTimestamp = moment(events[events.length - 1].created_at);
+
+				if (page < 10 && lastEventTimestamp > rangeStart) {
+					self.getOrganizationEvents(org, rangeStart, rangeEnd, page + 1, events, deferred);
 				} else {
 					var finalEvents = [];
 					// Prune results
@@ -47,9 +84,11 @@ module.exports = {
 	aggregateEventsByUser: function(events) {
 		let users = {};
 		events.forEach((event) => {
-			if (!users[event.actor.login]) 
-				users[event.actor.login] = [];
-			users[event.actor.login].push(event);
+			if (!users[event.actor.display_login]) 
+				users[event.actor.display_login] = { events: [] };
+			users[event.actor.display_login].events.push(event);
+			users[event.actor.display_login].url = `https://github.com/${event.actor.display_login}`;;
+			users[event.actor.display_login].avatar_url = event.actor.avatar_url;
 		});
 		return users;
 	},

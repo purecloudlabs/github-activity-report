@@ -20,8 +20,10 @@ api.config.token = process.env.GITHUB_TOKEN;
 api.config.debug = process.env.GITHUB_DEBUG_API === 'true';
 dot.templateSettings.strip = false;
 
-var repos = [];
+var repoData = [];
 var repoDataTimestamp = '';
+var activityData = { events: [], userEvents: [] };
+var activityDataTimestamp = '';
 
 const templateFunctions = {
 	getMoment: (str) => { return moment(str); },
@@ -42,22 +44,21 @@ log.info('Loading data...');
 loadData()
 	.then(() => {
 		log.profile('data load');
-		log.debug(`Processing ${repos.length} repos...`);
-
-		// Sort repos
-		repos = _.sortBy(repos, (repo) => { return repo.lastCommitDate; });
-		repos.reverse();
+		log.debug(`Processing ${repoData.length} repos...`);
 
 		// Create data object for template
 		var data = {
-			repos: repos,
+			repos: repoData,
+			activity: activityData,
 			generatedTimestamp: moment().tz('US/Eastern').format('LLLL z (\\G\\M\\TZ)'),
-			dataTimestamp: repoDataTimestamp.tz('US/Eastern').format('LLLL z (\\G\\M\\TZ)')
+			repoDataTimestamp: repoDataTimestamp.tz('US/Eastern').format('LLLL z (\\G\\M\\TZ)'),
+			activityDataTimestamp: activityDataTimestamp.tz('US/Eastern').format('LLLL z (\\G\\M\\TZ)')
 		};
 
 		// Execute templates
 		templateFullService({ source: 'repo-status-report', dest: `s3/${GEN_TIMESTAMP}/repo-status-report` }, data, templateFunctions);
 		templateFullService({ source: 'repo-watchlist', dest: `s3/${GEN_TIMESTAMP}/repo-watchlist` }, data, templateFunctions);
+		templateFullService({ source: 'user-activity-report', dest: `s3/${GEN_TIMESTAMP}/user-activity-report` }, data, templateFunctions);
 		templateFullService('repo-status-report-email', data, templateFunctions);
 
 		// Copy S3 dir to latest
@@ -76,37 +77,60 @@ loadData()
 function loadData() {
 	var deferred = Q.defer();
 
-	let cachedDataExists = false;
+	let cachedRepoDataExists = false;
+	let cachedActivityDataExists = false;
 	let repoDataPath = path.join(DATA_CACHE_PATH, 'repodata.json');
 	let repoDataTimestampPath = path.join(DATA_CACHE_PATH, 'repodata.timestamp');
+	let activityDataPath = path.join(DATA_CACHE_PATH, 'activityData.json');
+	let activityDataTimestampPath = path.join(DATA_CACHE_PATH, 'activityData.timestamp');
 	
 	if (fs.existsSync(repoDataPath) && fs.existsSync(repoDataTimestampPath)) {
 		repoDataTimestamp = moment(fs.readFileSync(repoDataTimestampPath, 'utf8'));
 		let cachedMinutes = moment().diff(repoDataTimestamp, 'minutes');
-		log.debug(`Cached data is ${cachedMinutes} minutes old`);
-		cachedDataExists = cachedMinutes < 30;
-		if (!cachedDataExists)
-			log.info('Cached data exists, but is out of date.');
+		log.debug(`Cached repo data is ${cachedMinutes} minutes old`);
+		cachedRepoDataExists = cachedMinutes < 30;
+		if (!cachedRepoDataExists)
+			log.info('Cached repo data exists, but is out of date.');
+	}
+	
+	if (fs.existsSync(activityDataPath) && fs.existsSync(activityDataTimestampPath)) {
+		activityDataTimestamp = moment(fs.readFileSync(activityDataTimestampPath, 'utf8'));
+		let cachedMinutes = moment().diff(activityDataTimestamp, 'minutes');
+		log.debug(`Cached activity data is ${cachedMinutes} minutes old`);
+		cachedActivityDataExists = cachedMinutes < 30;
+		if (!cachedActivityDataExists)
+			log.info('Cached activity data exists, but is out of date.');
 	}
 
-	if (cachedDataExists) {
+	let promises = [];
+	
+	if (cachedRepoDataExists) {
 		log.info('Loading repo data from cache');
-		repos = require(repoDataPath);
-		deferred.resolve();
+		repoData = require(repoDataPath);
 	} else {
-		log.info('Retrieving data from github API. This will take a moment.');
-		loadApiData()
-			.then(() => { deferred.resolve(); })
-			.catch((err) => {
-				log.error(err);
-				deferred.reject(err);
-			});
+		log.info('Retrieving repo data via github API. This will take a moment.');
+		promises.push(loadRepoData());
 	}
+
+	if (cachedActivityDataExists) {
+		log.info('Loading activity data from cache');
+		activityData = require(activityDataPath);
+	} else {
+		log.info('Retrieving activity data via github API. This will take a moment.');
+		promises.push(loadActivityData());
+	}
+
+	Promise.all(promises)
+		.then(() => { deferred.resolve(); })
+		.catch((err) => {
+			log.error(err);
+			deferred.reject(err);
+		});
 
 	return deferred.promise;
 }
 
-function loadApiData() {
+function loadRepoData() {
 	let deferred = Q.defer();
 
 	log.profile('repo list');
@@ -118,7 +142,7 @@ function loadApiData() {
 			log.info('Getting PRs...');
 			log.profile('repo prs');
 			_.forEach(data, (repo) => {
-				repos.push(repo);
+				repoData.push(repo);
 				promises.push(loadRepositoryPullRequests(repo));
 			});
 
@@ -130,7 +154,7 @@ function loadApiData() {
 
 			log.info('Getting repo commits...');
 			log.profile('repo commits');
-			_.forEach(repos, (repo) => {
+			_.forEach(repoData, (repo) => {
 				promises.push(loadRepositoryCommits(repo));
 			});
 
@@ -142,7 +166,7 @@ function loadApiData() {
 
 			log.info('Getting repo issues...');
 			log.profile('repo issues');
-			_.forEach(repos, (repo) => {
+			_.forEach(repoData, (repo) => {
 				promises.push(loadRepositoryIssues(repo));
 			});
 
@@ -154,8 +178,8 @@ function loadApiData() {
 
 			log.info('Getting PR comments...');
 			log.profile('pr comments');
-			for (let i = 0; i < repos.length; i++) {
-				repos[i].pullRequests.forEach((pullRequest) => {
+			for (let i = 0; i < repoData.length; i++) {
+				repoData[i].pullRequests.forEach((pullRequest) => {
 					promises.push(loadPullRequestComments(pullRequest));
 				});
 			}
@@ -168,8 +192,8 @@ function loadApiData() {
 
 			log.info('Getting PR commits...');
 			log.profile('pr commits');
-			for (let i = 0; i < repos.length; i++) {
-				repos[i].pullRequests.forEach((pullRequest) => {
+			for (let i = 0; i < repoData.length; i++) {
+				repoData[i].pullRequests.forEach((pullRequest) => {
 					promises.push(loadPullRequestCommits(pullRequest));
 				});
 			}
@@ -180,8 +204,8 @@ function loadApiData() {
 
 			log.info('Checking OSS index opt in...');
 			log.profile('ossindex');
-			for (let i = 0; i < repos.length; i++) {
-				promises.push(checkOssFile(repos[i]));
+			for (let i = 0; i < repoData.length; i++) {
+				promises.push(checkOssFile(repoData[i]));
 			}
 
 			return Promise.all(promises);
@@ -190,16 +214,77 @@ function loadApiData() {
 			log.profile('ossindex');
 			log.debug(`Request Count: ${api.getRequestCount()}`);
 			log.info('Generating repo meta properties...');
-			repos.forEach((repo) => {
+			repoData.forEach((repo) => {
 				generateRepositoryMetaProperties(repo);
 				checkRepositorySla(repo);
 			});
+
+			// Sort repo data
+			repoData = _.sortBy(repoData, (repo) => { return repo.lastCommitDate; });
+			repoData.reverse();
 		})
 		.then(() => {
 			repoDataTimestamp = moment();
-			fs.writeFileSync(path.join(DATA_CACHE_PATH, 'repodata.json'), JSON.stringify(repos,null,2));
+			
+			fs.writeFileSync(path.join(DATA_CACHE_PATH, 'repodata.json'), JSON.stringify(repoData,null,2));
 			fs.writeFileSync(path.join(DATA_CACHE_PATH, 'repodata.timestamp'), repoDataTimestamp.format());
-			log.info(`Data written to ${DATA_CACHE_PATH}`);
+
+			log.info(`Repo data written to ${DATA_CACHE_PATH}`);
+
+			deferred.resolve();
+		})
+		.catch((err) => {
+			log.error(err);
+			deferred.reject(err);
+		});
+
+	return deferred.promise;
+}
+
+function loadActivityData() {
+	let deferred = Q.defer();
+
+	github.getOrganizationEvents('mypurecloud', moment().subtract(1, 'week'))
+		.then((data) => {
+			activityData.events = data;
+			activityData.userEvents = github.aggregateEventsByUser(data);
+
+			activityData.topUsers = [];
+			activityData.eventNames = [];
+			activityData.eventCounts = {};
+
+			// Tally event type counts
+			_.forEach(activityData.userEvents, (userData, user) => {
+				activityData.topUsers.push({ user: user, eventCount: userData.events.length });
+
+				userData.eventCounts = {};
+				userData.events.forEach((event) => {
+					if (!userData.eventCounts[event.type]) userData.eventCounts[event.type] = 0;
+					if (!activityData.eventCounts[event.type]) activityData.eventCounts[event.type] = 0;
+					if (!activityData.eventNames.includes(event.type)) activityData.eventNames.push(event.type);
+
+					userData.eventCounts[event.type]++;
+					activityData.eventCounts[event.type]++;
+				});
+			});
+
+			_.forEach(activityData.userEvents, (userData) => {
+				activityData.eventNames.forEach((event) => {
+					if (!userData.eventCounts[event]) userData.eventCounts[event] = 0;
+				});
+			});
+
+			// Sort top users list
+			activityData.topUsers = _.sortBy(activityData.topUsers, (user) => { return user.eventCount; });
+			activityData.topUsers.reverse();
+		})
+		.then(() => {
+			activityDataTimestamp = moment();
+
+			fs.writeFileSync(path.join(DATA_CACHE_PATH, 'activityData.json'), JSON.stringify(activityData,null,2));
+			fs.writeFileSync(path.join(DATA_CACHE_PATH, 'activityData.timestamp'), activityDataTimestamp.format());
+
+			log.info(`Activity data written to ${DATA_CACHE_PATH}`);
 
 			deferred.resolve();
 		})

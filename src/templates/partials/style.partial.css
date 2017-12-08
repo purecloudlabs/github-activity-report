@@ -90,3 +90,18 @@
 		.icon-pad-left {
 			margin-left: 3pt;
 		}
+
+		.gray-text {
+			color: #CCCCCC;
+		}
+
+		.user-avatar {
+			width: 20px;
+			height: 20px;
+			display: inline-block;
+	    overflow: hidden;
+	    line-height: 1;
+	    vertical-align: middle;
+	    border-radius: 3px;
+	    margin-right: 3pt;
+		}
