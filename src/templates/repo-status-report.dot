@@ -4,6 +4,8 @@
 	<title>Github Repo Status Report</title>
 
 	<link href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
+	<!-- https://octicons.github.com/ -->
+	<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/octicons/4.4.0/font/octicons.css" />
 
 	<style type="text/css">
 {{# def.loadPartial('style.partial.css') }}
@@ -46,11 +48,16 @@
 						<th class="text-center">Status</th>
 					</tr>{{~ it.repos :repo }}
 					<tr>
-						<td title="{{= repo.description }}"><a href="{{= repo.html_url }}" target="_blank">{{= repo.name }}</a>{{? repo.private }}<span class="repo-badge-private">Private</span>{{?}}{{? repo.fork }}<span class="repo-badge-fork">Fork</span>{{?}}{{? repo.isOss }}<span class="repo-badge-oss">OSS</span>{{?}}</td>
+						<td title="{{= repo.description }}"><a href="{{= repo.html_url }}" target="_blank">{{= repo.name }}</a>{{? repo.private }}<span title="Private" class="octicon octicon-lock icon-pad-left icon-pad-right"></span>{{?}}{{? repo.fork }}<span title="Fork" class="octicon octicon-repo-forked icon-pad-left icon-pad-right"></span>{{?}}{{? repo.isOss }}<span title="Open Source Solution" class="octicon octicon-globe icon-pad-left icon-pad-right"></span>{{?}}</td>
+
 						<td>{{= repo.age }}</td>
+						
 						<td title="commit message: {{= repo.lastCommit.commit.message }}"><a href="{{= repo.lastCommit.html_url }}" target="_blank">{{= repo.lastCommitAge }}</a> by <a href="mailto:{{= repo.lastCommit.commit.author.email }}" target="_blank">{{= repo.lastCommit.commit.author.name }}</a></td>
+						
 						<td class="text-center">{{? repo.has_issues}}<a href="{{= repo.issuesUrl }}" target="_blank">{{= repo.issueCount }}</a>{{?? true }}{{= repo.issueCount }}{{?}}</td> 
+						
 						<td class="text-center"><a href="{{= repo.pullRequestsUrl }}" target="_blank">{{= repo.pullRequestCount }}</a></td>
+						
 						<td><span class="repo-status-{{= repo.status }}">{{= repo.statusDisplay }}</span></td>
 					</tr>{{~}}
 				</table>
