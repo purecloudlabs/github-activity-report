@@ -7,6 +7,7 @@ const moment = require('moment-timezone');
 const path = require('path');
 const Q = require('q');
 const request = require('request-promise');
+const urljoin = require('url-join');
 
 const github = require('./github-helpers');
 const DATA_CACHE_PATH = path.join(__dirname, '../cache');
@@ -364,9 +365,9 @@ function generateRepositoryMetaProperties(repo) {
 	repo.issueCount = repo.issues.length;
 
 	// Set extra links
-	repo.pullRequestsUrl = path.join(repo.html_url, 'pulls');
+	repo.pullRequestsUrl = urljoin(repo.html_url, 'pulls');
 	if (repo.has_issues)
-		repo.issuesUrl = path.join(repo.html_url, 'issues');
+		repo.issuesUrl = urljoin(repo.html_url, 'issues');
 }
 
 function checkRepositorySla(repo) {

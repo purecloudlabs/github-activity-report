@@ -19,6 +19,7 @@
     "moment-timezone": "^0.5.13",
     "q": "^1.5.0",
     "request": "^2.83.0",
-    "request-promise": "^4.2.2"
+    "request-promise": "^4.2.2",
+    "url-join": "^2.0.2"
   }
 }
