@@ -2,14 +2,9 @@
 <html>
 <head>
 	<title>Github Repo Watchlist</title>
-
-	<link href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
-	<!-- https://octicons.github.com/ -->
-	<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/octicons/4.4.0/font/octicons.css" />
-
-
 	<style type="text/css">
 {{# def.loadPartial('style.partial.css') }}
+{{# def.loadPartial('style-email.partial.css') }}
 	</style>
 </head>
 <body>
@@ -33,7 +28,7 @@
 						<th class="text-center">Resolution</th>
 					</tr>{{~ it.repos :repo }}{{~ repo.watchlist :item }}
 					<tr>
-						<td title="{{= repo.description }}"><a href="{{= repo.html_url }}" target="_blank">{{= repo.name }}</a>{{? repo.private }}<span title="Private" class="octicon octicon-lock icon-pad-left icon-pad-right"></span>{{?}}{{? repo.fork }}<span title="Fork" class="octicon octicon-repo-forked icon-pad-left icon-pad-right"></span>{{?}}{{? repo.isOss }}<span title="Open Source Solution" class="octicon octicon-globe icon-pad-left icon-pad-right"></span>{{?}}</td>
+						<td title="{{= repo.description }}"><a href="{{= repo.html_url }}" target="_blank">{{= repo.name }}</a>{{# def.loadPartial('repo-badges-html.dot') }}</td>
 
 						<td>{{? item.watchlistType === 'issue' }}<span title="Issue" class="octicon octicon-issue-opened icon-pad-right"></span>{{?}}{{? item.watchlistType === 'pull request' }}<span title="Pull Request" class="octicon octicon-git-pull-request icon-pad-right"></span>{{?}}<a href="{{= item.html_url }}" target="_blank">{{= item.title }}</a></td>
 

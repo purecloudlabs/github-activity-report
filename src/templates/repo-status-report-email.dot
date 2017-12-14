@@ -43,7 +43,7 @@
 						<th class="text-center">Status</th>
 					</tr>{{~ it.repos :repo }}
 					<tr>
-						<td title="{{= repo.description }}"><a href="{{= repo.html_url }}" target="_blank">{{= repo.name }}</a>{{? repo.private }}<span class="repo-badge-private">Private</span>{{?}}{{? repo.fork }}<span class="repo-badge-fork">Fork</span>{{?}}{{? repo.isOss }}<span class="repo-badge-oss">OSS</span>{{?}}</td>
+						<td title="{{= repo.description }}"><a href="{{= repo.html_url }}" target="_blank">{{= repo.name }}</a>{{# def.loadPartial('repo-badges-html.dot') }}</td>
 						<td title="commit message: {{= repo.lastCommit.commit.message }}"><a href="{{= repo.lastCommit.html_url }}" target="_blank">{{= repo.lastCommitAge }}</a> by <a href="mailto:{{= repo.lastCommit.commit.author.email }}" target="_blank">{{= repo.lastCommit.commit.author.name }}</td>
 						<td class="text-center">{{= repo.issueCount }}</td> 
 						<td class="text-center">{{= repo.pullRequestCount }}</td>

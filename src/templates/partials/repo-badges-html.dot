@@ -1,0 +1,1 @@
+{{? repo.private }}<span class="repo-badge-private">Private</span>{{?}}{{? repo.fork }}<span class="repo-badge-fork">Fork</span>{{?}}{{? repo.isOss }}<span class="repo-badge-oss">OSS</span>{{?}}
