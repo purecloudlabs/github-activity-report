@@ -3,7 +3,7 @@ const log = new (require('lognext'))('genemail');
 const path = require('path');
 const yaml = require('yamljs');
 
-const repoData = require(path.join(__dirname, '../cache/repoData.json'));
+const repoData = require(path.join(__dirname, '../cache/repodata.json'));
 const repoContacts = yaml.load(path.join(__dirname, '../../open-source-repo-data/repo-contacts.yml'));
 
 Array.prototype.pushArray = function(arr) {
