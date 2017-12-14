@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>Github User Activity Report</title>
+
+	<link href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
+	<!-- https://octicons.github.com/ -->
+	<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/octicons/4.4.0/font/octicons.css" />
+
+
+	<style type="text/css">
+{{# def.loadPartial('style.partial.css') }}
+	</style>
+</head>
+<body>
+
+	<div class="jumbotron jumbotron-fluid">
+		<div class="container">
+			<h1 class="display-3">User Activity Report</h1>
+			<p>User activity data for the past 7 days</p>
+		</div>
+	</div>
+
+	<div class="container">
+		<div class="row">
+			<div class="col-sm-12">
+				<table class="table table-striped">
+					<tr>
+						<th>User</th>
+						<th class="text-center">Total</th>{{~ it.activity.eventNames :eventName }}
+						<th class="text-center">{{= eventName }}</th>{{~}}
+					</tr>{{~ it.activity.topUsers : user }}
+					<tr>
+						<td><a href="{{= it.activity.userEvents[user.user].url }}" target="_blank"><img src="{{= it.activity.userEvents[user.user].avatar_url }}" class="user-avatar" />{{= user.user }}</a></td>
+						<td class="text-center">{{= user.eventCount }}</td>{{~ it.activity.eventNames :eventName }}
+						<td class="text-center{{? it.activity.userEvents[user.user].eventCounts[eventName] === 0 }} gray-text{{?}}">{{= it.activity.userEvents[user.user].eventCounts[eventName] }}</td>{{~}}
+					</tr>{{~}}
+				</table>
+			</div>
+		</div>
+	</div>
+
+	<div class="container-fluid report-footer">
+		<div class="row">
+			<div class="col-sm-12">
+				<div class="container">
+					<div class="row">
+						<div class="col-sm-12 report-footer-content">
+							Report generated at {{= it.generatedTimestamp }}<br />
+							Data cached at {{= it.repoDataTimestamp }}
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+
+</body>
+</html>

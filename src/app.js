@@ -61,6 +61,8 @@ loadData()
 		templateFullService({ source: 'repo-watchlist', dest: `s3/${GEN_TIMESTAMP}/repo-watchlist` }, data, templateFunctions);
 		templateFullService({ source: 'user-activity-report', dest: `s3/${GEN_TIMESTAMP}/user-activity-report` }, data, templateFunctions);
 		templateFullService('repo-status-report-email', data, templateFunctions);
+		templateFullService('repo-watchlist-email', data, templateFunctions);
+		templateFullService('user-activity-report-email', data, templateFunctions);
 
 		// Copy S3 dir to latest
 		let outSource = `${OUTPUT_PATH}/s3/${GEN_TIMESTAMP}`;
