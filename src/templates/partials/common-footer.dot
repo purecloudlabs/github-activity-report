@@ -1,0 +1,9 @@
+							<p>
+								Report generated at {{= it.generatedTimestamp }}<br />
+								Data cached at {{= it.repoDataTimestamp }}
+							</p>
+							<p>
+								<a href="https://s3.amazonaws.com/inin-index-files-prod/developercenter-cdn/internal/github-reports/latest/repo-status-report.html">Repo Status Report</a> | 
+								<a href="https://s3.amazonaws.com/inin-index-files-prod/developercenter-cdn/internal/github-reports/latest/repo-watchlist.html">Repo Watchlist</a> | 
+								<a href="https://s3.amazonaws.com/inin-index-files-prod/developercenter-cdn/internal/github-reports/latest/user-activity-report.html">User Activity Report</a>
+							</p>
