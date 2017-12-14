@@ -13,6 +13,7 @@
 		<div class="container">
 			<h1 class="display-3">User Activity Report</h1>
 			<p>User activity data for the past 7 days</p>
+			<p><a href="https://s3.amazonaws.com/inin-index-files-prod/developercenter-cdn/internal/github-reports/latest/user-activity-report.html">View this report in a browser</a></p>
 		</div>
 	</div>
 

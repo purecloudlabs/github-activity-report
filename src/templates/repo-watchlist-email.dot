@@ -13,6 +13,7 @@
 		<div class="container">
 			<h1 class="display-3">Repo Watchlist</h1>
 			<p>Issues and pull requests that have failed to meet <a href="https://github.com/MyPureCloud/content-standards/blob/master/maintenance-standards.md" target="_blank">repo maintenance standards</a></p>
+			<p><a href="https://s3.amazonaws.com/inin-index-files-prod/developercenter-cdn/internal/github-reports/latest/repo-watchlist.html">View this report in a browser</a></p>
 		</div>
 	</div>
 

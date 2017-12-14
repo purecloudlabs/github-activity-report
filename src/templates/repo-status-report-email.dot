@@ -13,6 +13,7 @@
 		<div class="container">
 			<h1 class="display-3">Repo Status Report</h1>
 			<p>An overview of all repos</p>
+			<p><a href="https://s3.amazonaws.com/inin-index-files-prod/developercenter-cdn/internal/github-reports/latest/repo-status-report.html">View this report in a browser</a></p>
 		</div>
 	</div>
 
