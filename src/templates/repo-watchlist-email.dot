@@ -32,11 +32,11 @@
 
 						<td>{{? item.watchlistType === 'issue' }}<span title="Issue" class="octicon octicon-issue-opened icon-pad-right"></span>{{?}}{{? item.watchlistType === 'pull request' }}<span title="Pull Request" class="octicon octicon-git-pull-request icon-pad-right"></span>{{?}}<a href="{{= item.html_url }}" target="_blank">{{= item.title }}</a></td>
 
-						<td class="text-center">{{? item.sla.initialResponse.met === true }}<span class="glyphicon glyphicon-ok-circle" aria-hidden="true"></span>{{??}}<span class="glyphicon glyphicon-remove-circle" aria-hidden="true"></span><span class="sla-failed-text">{{= item.sla.initialResponse.age }} days</span>{{?}}</td>
+						<td class="text-center">{{? item.sla.initialResponse.met === true }}<span class="glyphicon glyphicon-ok-circle" aria-hidden="true">√</span>{{??}}<span class="glyphicon glyphicon-remove-circle" aria-hidden="true"></span><span class="sla-failed-text">{{= item.sla.initialResponse.age }} days</span>{{?}}</td>
 
-						<td class="text-center">{{? item.sla.activity.met === true }}<span class="glyphicon glyphicon-ok-circle" aria-hidden="true" title="{{= item.sla.activity.age }} days ago"></span>{{??}}<span class="glyphicon glyphicon-remove-circle" aria-hidden="true"></span><span class="sla-failed-text">{{= item.sla.activity.age }} days</span>{{?}}</td>
+						<td class="text-center">{{? item.sla.activity.met === true }}<span class="glyphicon glyphicon-ok-circle" aria-hidden="true" title="{{= item.sla.activity.age }} days ago">√</span>{{??}}<span class="glyphicon glyphicon-remove-circle" aria-hidden="true"></span><span class="sla-failed-text">{{= item.sla.activity.age }} days</span>{{?}}</td>
 
-						<td class="text-center">{{? item.sla.resolution.met === true }}<span class="glyphicon glyphicon-ok-circle" aria-hidden="true" title="{{= item.sla.resolution.age }} days old"></span>{{??}}<span class="glyphicon glyphicon-remove-circle" aria-hidden="true"></span><span class="sla-failed-text">{{= item.sla.resolution.age }} days</span>{{?}}</td>
+						<td class="text-center">{{? item.sla.resolution.met === true }}<span class="glyphicon glyphicon-ok-circle" aria-hidden="true" title="{{= item.sla.resolution.age }} days old">√</span>{{??}}<span class="glyphicon glyphicon-remove-circle" aria-hidden="true"></span><span class="sla-failed-text">{{= item.sla.resolution.age }} days</span>{{?}}</td>
 					</tr>{{~}}{{~}}
 				</table>
 			</div>
