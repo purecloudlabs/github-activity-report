@@ -17,6 +17,12 @@ let cc = [];
 // Build list of emails
 repoData.forEach((repo) => {
 	if (repo.watchlist.length > 0) {
+		if (!repoContacts.mypurecloud[repo.name]) {
+			// TODO: make a list of repos with no config and call it out in the email
+			log.error(`No configuration for ${repo.name}!`);
+			return;
+		}
+
 		if (!repoContacts.mypurecloud[repo.name].maintainers) 
 			repoContacts.mypurecloud[repo.name].maintainers = [];
 		if (!repoContacts.mypurecloud[repo.name].owners) 
@@ -24,7 +30,7 @@ repoData.forEach((repo) => {
 
 		if (repoContacts.mypurecloud[repo.name].maintainers.length == 0) {
 			if (repoContacts.mypurecloud[repo.name].owners.length == 0) {
-				log.warn(`${repo.name} is on the watchlist and does not have owners or maintainers defined!`);
+				log.error(`${repo.name} is on the watchlist and does not have owners or maintainers defined!`);
 				// TODO: make a list of repos with no contacts and call it out in the email
 			} else {
 				log.warn(`${repo.name} is on the watchlist and does not have maintainers defined! Addressing owners instead.`);
