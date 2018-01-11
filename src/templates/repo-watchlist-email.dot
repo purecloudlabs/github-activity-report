@@ -9,6 +9,8 @@
 </head>
 <body>
 
+	<p><i>You are receiving this email because you have been identified as a maintainer or owner of a repository that has issues or pull requests on the watchlist. Please review the list below and take action to close out any issues or PRs that are out of compliance.</i></p>
+
 	<div class="jumbotron jumbotron-fluid">
 		<div class="container">
 			<h1 class="display-3">Repo Watchlist</h1>
@@ -31,7 +33,7 @@
 					</tr>{{~ it.repos :repo }}{{~ repo.watchlist :item }}
 					<tr>
 						<td><a href="mailto:{{= repo.contacts.primary.email }}">{{= repo.contacts.primary.name }}</a></td>
-						
+
 						<td title="{{= repo.description }}"><a href="{{= repo.html_url }}" target="_blank">{{= repo.name }}</a>{{# def.loadPartial('repo-badges-html.dot') }}</td>
 
 						<td>{{? item.watchlistType === 'issue' }}<span title="Issue" class="octicon octicon-issue-opened icon-pad-right"></span>{{?}}{{? item.watchlistType === 'pull request' }}<span title="Pull Request" class="octicon octicon-git-pull-request icon-pad-right"></span>{{?}}<a href="{{= item.html_url }}" target="_blank">{{= item.title }}</a></td>
