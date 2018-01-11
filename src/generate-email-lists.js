@@ -14,7 +14,7 @@ Array.prototype.pushArray = function(arr) {
 let to = [];
 let cc = [];
 
-// Build list of emails
+// Build list of emails from watchlist
 repoData.forEach((repo) => {
 	if (repo.watchlist.length > 0) {
 		if (!repoContacts.mypurecloud[repo.name]) {
@@ -58,7 +58,19 @@ cc.forEach((member) => {
 		emailList.push(`cc:${member.email}`);
 });
 
-console.log('TO: ');
+console.log('Watchlist emails: ');
 console.log(JSON.stringify(emailList,null,2));
 
-fs.writeFileSync(path.join(__dirname, '../cache/email-list.txt'), emailList.join(','));
+fs.writeFileSync(path.join(__dirname, '../cache/watchlist-emails.txt'), emailList.join(','));
+
+// Opt in only list
+let optInEmails = [];
+repoContacts['mypurecloud-opt-in'].forEach((member) => {
+	if (optInEmails.indexOf(member.email) < 0) 
+		optInEmails.push(member.email);
+});
+
+console.log('Opt in emails: ');
+console.log(JSON.stringify(optInEmails,null,2));
+
+fs.writeFileSync(path.join(__dirname, '../cache/mypurecloud-opt-in.txt'), emailList.join(','));
