@@ -38,6 +38,7 @@
 				<table class="table table-striped">
 					<tr>
 						<th>Name</th>
+						<th>Primary Contact</th>
 						<th>Last Commit</th>
 						<th class="text-center">Open Issues</th>
 						<th class="text-center">Open PRs</th>
@@ -45,6 +46,7 @@
 					</tr>{{~ it.repos :repo }}
 					<tr>
 						<td title="{{= repo.description }}"><a href="{{= repo.html_url }}" target="_blank">{{= repo.name }}</a>{{# def.loadPartial('repo-badges-html.dot') }}</td>
+						<td><a href="mailto:{{= repo.contacts.primary.email }}">{{= repo.contacts.primary.name }}</a></td>
 						<td title="commit message: {{= repo.lastCommit.commit.message }}"><a href="{{= repo.lastCommit.html_url }}" target="_blank">{{= repo.lastCommitAge }}</a> by <a href="mailto:{{= repo.lastCommit.commit.author.email }}" target="_blank">{{= repo.lastCommit.commit.author.name }}</td>
 						<td class="text-center">{{= repo.issueCount }}</td> 
 						<td class="text-center">{{= repo.pullRequestCount }}</td>

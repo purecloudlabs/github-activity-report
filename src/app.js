@@ -8,12 +8,18 @@ const path = require('path');
 const Q = require('q');
 const request = require('request-promise');
 const urljoin = require('url-join');
+const yaml = require('js-yaml');
 
 const github = require('./github-helpers');
 const DATA_CACHE_PATH = path.join(__dirname, '../cache');
 const OUTPUT_PATH = path.join(__dirname, '../output');
 const GEN_TIMESTAMP = moment().format('YMMDD-HHmmss');
-
+const REPO_CONTACTS_PATH = path.join(__dirname, '../../open-source-repo-data/repo-contacts.yml');
+const GITHUB_ORG = 'mypurecloud';
+const sortOrder = {
+	LAST_COMMIT: 'last commit',
+	PRIMARY_CONTACT: 'primary contact'
+};
 
 
 // Set settings
@@ -25,6 +31,7 @@ let repoData = [];
 let repoDataTimestamp = '';
 let activityData = { events: [], userEvents: [] };
 let activityDataTimestamp = '';
+let repoContacts = fs.existsSync(REPO_CONTACTS_PATH) ? yaml.safeLoad(fs.readFileSync(REPO_CONTACTS_PATH, 'utf8')) : {};
 
 const templateFunctions = {
 	getMoment: (str) => { return moment(str); },
@@ -57,11 +64,17 @@ loadData()
 		};
 
 		// Execute templates
+		sortRepoData(sortOrder.LAST_COMMIT);
+		data.repos = repoData;
 		templateFullService({ source: 'repo-status-report', dest: `s3/${GEN_TIMESTAMP}/repo-status-report` }, data, templateFunctions);
-		templateFullService({ source: 'repo-watchlist', dest: `s3/${GEN_TIMESTAMP}/repo-watchlist` }, data, templateFunctions);
-		templateFullService({ source: 'user-activity-report', dest: `s3/${GEN_TIMESTAMP}/user-activity-report` }, data, templateFunctions);
 		templateFullService('repo-status-report-email', data, templateFunctions);
+
+		sortRepoData(sortOrder.PRIMARY_CONTACT);
+		data.repos = repoData;
+		templateFullService({ source: 'repo-watchlist', dest: `s3/${GEN_TIMESTAMP}/repo-watchlist` }, data, templateFunctions);
 		templateFullService('repo-watchlist-email', data, templateFunctions);
+
+		templateFullService({ source: 'user-activity-report', dest: `s3/${GEN_TIMESTAMP}/user-activity-report` }, data, templateFunctions);
 		templateFullService('user-activity-report-email', data, templateFunctions);
 
 		// Copy S3 dir to latest
@@ -124,7 +137,10 @@ function loadData() {
 	}
 
 	Promise.all(promises)
-		.then(() => { deferred.resolve(); })
+		.then(() => { 
+			postProcessRepoData();
+			deferred.resolve(); 
+		})
 		.catch((err) => {
 			log.error(err);
 			deferred.reject(err);
@@ -137,7 +153,7 @@ function loadRepoData() {
 	let deferred = Q.defer();
 
 	log.profile('repo list');
-	github.getOrgRepos('mypurecloud')
+	github.getOrgRepos(GITHUB_ORG)
 		.then((data) => {
 			log.profile('repo list');
 			let promises = [];
@@ -215,16 +231,7 @@ function loadRepoData() {
 		})
 		.then(() => {
 			log.profile('ossindex');
-			log.debug(`Request Count: ${api.getRequestCount()}`);
-			log.info('Generating repo meta properties...');
-			repoData.forEach((repo) => {
-				generateRepositoryMetaProperties(repo);
-				checkRepositorySla(repo);
-			});
-
-			// Sort repo data
-			repoData = _.sortBy(repoData, (repo) => { return repo.lastCommitDate; });
-			repoData.reverse();
+			postProcessRepoData();
 		})
 		.then(() => {
 			repoDataTimestamp = moment();
@@ -244,10 +251,42 @@ function loadRepoData() {
 	return deferred.promise;
 }
 
+function postProcessRepoData() {
+	log.debug(`Request Count: ${api.getRequestCount()}`);
+	log.info('Generating repo meta properties...');
+	repoData.forEach((repo) => {
+		generateRepositoryMetaProperties(repo);
+		checkRepositorySla(repo);
+	});
+}
+
+function sortRepoData(by = sortOrder.LAST_COMMIT) {
+	log.debug(`Sorting repo data by ${by}`);
+	switch (by) {
+		case sortOrder.LAST_COMMIT: {
+			// Sort repo data by last repo commit date, most recent first
+			repoData = _.sortBy(repoData, (repo) => { return repo.lastCommitDate; });
+			repoData.reverse();
+			break;
+		}
+		case sortOrder.PRIMARY_CONTACT: {
+			// Sort repo data by primary contact last name, ascending
+			repoData = _.sortBy(repoData, (repo) => { 
+				let name = repo.contacts.primary.name.split(' ');
+				return name[name.length - 1];
+			});
+			break;
+		}
+		default: {
+			log.warn(`Unknown sort order: ${by}`);
+		}
+	}
+}
+
 function loadActivityData() {
 	let deferred = Q.defer();
 
-	github.getOrganizationEvents('mypurecloud', moment().subtract(1, 'week'))
+	github.getOrganizationEvents(GITHUB_ORG, moment().subtract(1, 'week'))
 		.then((data) => {
 			activityData.events = data;
 			activityData.userEvents = github.aggregateEventsByUser(data);
@@ -370,6 +409,17 @@ function generateRepositoryMetaProperties(repo) {
 	repo.pullRequestsUrl = urljoin(repo.html_url, 'pulls');
 	if (repo.has_issues)
 		repo.issuesUrl = urljoin(repo.html_url, 'issues');
+
+	// Set repo contacts
+	if (repoContacts[GITHUB_ORG][repo.name])
+		repo.contacts = repoContacts[GITHUB_ORG][repo.name];
+
+	if (repo.contacts.maintainers && repo.contacts.maintainers.length > 0)
+		repo.contacts.primary = repo.contacts.maintainers[0];
+	else if (repo.contacts.owners && repo.contacts.owners.length > 0)
+		repo.contacts.primary = repo.contacts.owners[0];
+	else
+		repo.contacts.primary = { name: 'Unknown', email: 'DeveloperEvangelists@genesys.com' };
 }
 
 function checkRepositorySla(repo) {
