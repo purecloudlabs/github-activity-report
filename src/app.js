@@ -21,10 +21,10 @@ api.config.token = process.env.GITHUB_TOKEN;
 api.config.debug = process.env.GITHUB_DEBUG_API === 'true';
 dot.templateSettings.strip = false;
 
-var repoData = [];
-var repoDataTimestamp = '';
-var activityData = { events: [], userEvents: [] };
-var activityDataTimestamp = '';
+let repoData = [];
+let repoDataTimestamp = '';
+let activityData = { events: [], userEvents: [] };
+let activityDataTimestamp = '';
 
 const templateFunctions = {
 	getMoment: (str) => { return moment(str); },
@@ -48,7 +48,7 @@ loadData()
 		log.debug(`Processing ${repoData.length} repos...`);
 
 		// Create data object for template
-		var data = {
+		let data = {
 			repos: repoData,
 			activity: activityData,
 			generatedTimestamp: moment().tz('US/Eastern').format('LLLL z (\\G\\M\\TZ)'),
@@ -78,7 +78,7 @@ loadData()
 
 
 function loadData() {
-	var deferred = Q.defer();
+	let deferred = Q.defer();
 
 	let cachedRepoDataExists = false;
 	let cachedActivityDataExists = false;
@@ -300,7 +300,7 @@ function loadActivityData() {
 }
 
 function checkOssFile(repo) {
-	var deferred = Q.defer();
+	let deferred = Q.defer();
 
 	let ossFile = repo.html_url + '/blob/master/ossindex.json';
 	request.get({ 
@@ -453,7 +453,7 @@ function checkRepositorySla(repo) {
 }
 
 function loadRepositoryIssues(repo) {
-	var deferred = Q.defer();
+	let deferred = Q.defer();
 
 	api.issues.issues.getRepositoryIssues(repo.owner.login, repo.name)
 		.then((data) => {
@@ -469,7 +469,7 @@ function loadRepositoryIssues(repo) {
 }
 
 function loadRepositoryPullRequests(repo) {
-	var deferred = Q.defer();
+	let deferred = Q.defer();
 
 	api.pullRequests.pullRequests.getPullRequests(repo.owner.login, repo.name)
 		.then((data) => {
@@ -485,7 +485,7 @@ function loadRepositoryPullRequests(repo) {
 }
 
 function loadRepositoryCommits(repo) {
-	var deferred = Q.defer();
+	let deferred = Q.defer();
 
 	api.repositories.commits.getCommits(repo.owner.login, repo.name)
 		.then((data) => {
@@ -501,7 +501,7 @@ function loadRepositoryCommits(repo) {
 }
 
 function loadPullRequestCommits(pullRequest) {
-	var deferred = Q.defer();
+	let deferred = Q.defer();
 
 	api.pullRequests.pullRequests.getPullRequestCommits(
 		pullRequest.base.user.login, 
@@ -520,7 +520,7 @@ function loadPullRequestCommits(pullRequest) {
 }
 
 function loadPullRequestComments(pullRequest) {
-	var deferred = Q.defer();
+	let deferred = Q.defer();
 
 	api.pullRequests.comments.getPullRequestComments(
 		pullRequest.base.user.login, 
@@ -564,7 +564,7 @@ function templateFullService(templateName, data, defs) {
 
 
 function executeTemplate(templateString, data, defs) {
-	var template = dot.template(templateString, null, defs);
+	let template = dot.template(templateString, null, defs);
 	return template(data);
 }
 
