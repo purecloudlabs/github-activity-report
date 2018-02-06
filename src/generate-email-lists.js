@@ -4,7 +4,8 @@ const path = require('path');
 const yaml = require('yamljs');
 
 const repoData = require(path.join(__dirname, '../cache/repodata.json'));
-const repoContacts = yaml.load(path.join(__dirname, '../../open-source-repo-data/repo-contacts.yml'));
+const repoContacts = yaml.load(path.join(__dirname, '../../open-source-repo-data/data/repo-contacts.yml'));
+const githubUsers = yaml.load(path.join(__dirname, '../../open-source-repo-data/data/github-users.yml'));
 
 Array.prototype.pushArray = function(arr) {
     this.push.apply(this, arr);
@@ -37,7 +38,15 @@ repoData.forEach((repo) => {
 				to.pushArray(repoContacts.mypurecloud[repo.name].owners);
 			}
 		} else {
-			to.pushArray(repoContacts.mypurecloud[repo.name].maintainers);
+			let maintainerContacts = [];
+			repoContacts.mypurecloud[repo.name].maintainers.forEach((maintainer) => {
+				if (githubUsers[maintainer]) {
+					maintainerContacts.push(githubUsers[maintainer]);
+				} else {
+					log.error(`Failed to find contact information for maintainer ${maintainer}`);
+				}
+			});
+			to.pushArray(maintainerContacts);
 		}
 	}
 });
