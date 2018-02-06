@@ -14,7 +14,8 @@ const github = require('./github-helpers');
 const DATA_CACHE_PATH = path.join(__dirname, '../cache');
 const OUTPUT_PATH = path.join(__dirname, '../output');
 const GEN_TIMESTAMP = moment().format('YMMDD-HHmmss');
-const REPO_CONTACTS_PATH = path.join(__dirname, '../../open-source-repo-data/repo-contacts.yml');
+const REPO_CONTACTS_PATH = path.join(__dirname, '../../open-source-repo-data/data/repo-contacts.yml');
+const GITHUB_USERS_PATH = path.join(__dirname, '../../open-source-repo-data/data/github-users.yml');
 const GITHUB_ORG = 'mypurecloud';
 const sortOrder = {
 	LAST_COMMIT: 'last commit',
@@ -32,6 +33,7 @@ let repoDataTimestamp = '';
 let activityData = { events: [], userEvents: [] };
 let activityDataTimestamp = '';
 let repoContacts = fs.existsSync(REPO_CONTACTS_PATH) ? yaml.safeLoad(fs.readFileSync(REPO_CONTACTS_PATH, 'utf8')) : {};
+let githubUsers = fs.existsSync(GITHUB_USERS_PATH) ? yaml.safeLoad(fs.readFileSync(GITHUB_USERS_PATH, 'utf8')) : {};
 
 const templateFunctions = {
 	getMoment: (str) => { return moment(str); },
@@ -411,8 +413,22 @@ function generateRepositoryMetaProperties(repo) {
 		repo.issuesUrl = urljoin(repo.html_url, 'issues');
 
 	// Set repo contacts
-	if (repoContacts[GITHUB_ORG][repo.name])
-		repo.contacts = repoContacts[GITHUB_ORG][repo.name];
+	if (repoContacts[GITHUB_ORG][repo.name]) {
+		repo.contacts = { 
+			owners: repoContacts[GITHUB_ORG][repo.name].owners ,
+			maintainers: []
+		};
+
+		// Populate maintaner info
+		repoContacts[GITHUB_ORG][repo.name].maintainers.forEach((maintainer) => {
+			if (githubUsers[maintainer]) {
+				repo.contacts.maintainers.push(githubUsers[maintainer]);
+			} else {
+				log.warn(`Unable to find contact info for ${maintainer}!`);
+				repo.contacts.maintainers.push({name: maintainer, email: maintainer });
+			}
+		});
+	}
 
 	if (repo.contacts.maintainers && repo.contacts.maintainers.length > 0)
 		repo.contacts.primary = repo.contacts.maintainers[0];
