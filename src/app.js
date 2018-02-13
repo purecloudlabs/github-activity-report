@@ -16,7 +16,6 @@ const OUTPUT_PATH = path.join(__dirname, '../output');
 const GEN_TIMESTAMP = moment().format('YMMDD-HHmmss');
 const REPO_CONTACTS_PATH = path.join(__dirname, '../../open-source-repo-data/data/repo-contacts.yml');
 const GITHUB_USERS_PATH = path.join(__dirname, '../../open-source-repo-data/data/github-users.yml');
-const GITHUB_ORG = 'mypurecloud';
 const sortOrder = {
 	LAST_COMMIT: 'last commit',
 	PRIMARY_CONTACT: 'primary contact'
@@ -127,7 +126,8 @@ function loadData() {
 		repoData = require(repoDataPath);
 	} else {
 		log.info('Retrieving repo data via github API. This will take a moment.');
-		promises.push(loadRepoData());
+		promises.push(loadRepoData('mypurecloud'));
+		promises.push(loadRepoData('purecloudlabs'));
 	}
 
 	if (cachedActivityDataExists) {
@@ -151,11 +151,11 @@ function loadData() {
 	return deferred.promise;
 }
 
-function loadRepoData() {
+function loadRepoData(orgName) {
 	let deferred = Q.defer();
 
 	log.profile('repo list');
-	github.getOrgRepos(GITHUB_ORG)
+	github.getOrgRepos(orgName)
 		.then((data) => {
 			log.profile('repo list');
 			let promises = [];
@@ -288,10 +288,14 @@ function sortRepoData(by = sortOrder.LAST_COMMIT) {
 function loadActivityData() {
 	let deferred = Q.defer();
 
-	github.getOrganizationEvents(GITHUB_ORG, moment().subtract(1, 'week'))
+	github.getOrganizationEvents('mypurecloud', moment().subtract(1, 'week'))
 		.then((data) => {
 			activityData.events = data;
-			activityData.userEvents = github.aggregateEventsByUser(data);
+			return github.getOrganizationEvents('purecloudlabs', moment().subtract(1, 'week'));
+		})
+		.then((data) => {
+			activityData.events = _.concat(activityData.events, data);
+			activityData.userEvents = github.aggregateEventsByUser(activityData.events);
 
 			activityData.topUsers = [];
 			activityData.eventNames = [];
@@ -413,14 +417,14 @@ function generateRepositoryMetaProperties(repo) {
 		repo.issuesUrl = urljoin(repo.html_url, 'issues');
 
 	// Set repo contacts
-	if (repoContacts[GITHUB_ORG][repo.name]) {
+	if (repoContacts[repo.owner.login.toLowerCase()][repo.name]) {
 		repo.contacts = { 
-			owners: repoContacts[GITHUB_ORG][repo.name].owners ,
+			owners: repoContacts[repo.owner.login.toLowerCase()][repo.name].owners ,
 			maintainers: []
 		};
 
 		// Populate maintaner info
-		repoContacts[GITHUB_ORG][repo.name].maintainers.forEach((maintainer) => {
+		repoContacts[repo.owner.login.toLowerCase()][repo.name].maintainers.forEach((maintainer) => {
 			if (githubUsers[maintainer]) {
 				repo.contacts.maintainers.push(githubUsers[maintainer]);
 			} else {
