@@ -49,7 +49,7 @@
 						<th class="text-center">Status</th>
 					</tr>{{~ it.repos :repo }}
 					<tr>
-						<td title="{{= repo.description }}"><a href="{{= repo.html_url }}" target="_blank">{{= repo.name }}</a>{{? repo.private }}<span title="Private" class="octicon octicon-lock icon-pad-left icon-pad-right"></span>{{?}}{{? repo.fork }}<span title="Fork" class="octicon octicon-repo-forked icon-pad-left icon-pad-right"></span>{{?}}{{? repo.isOss }}<span title="Open Source Solution" class="octicon octicon-globe icon-pad-left icon-pad-right"></span>{{?}}</td>
+						<td title="{{= repo.description }}"><a href="{{= repo.html_url }}" target="_blank">{{= repo.full_name }}</a>{{? repo.private }}<span title="Private" class="octicon octicon-lock icon-pad-left icon-pad-right"></span>{{?}}{{? repo.fork }}<span title="Fork" class="octicon octicon-repo-forked icon-pad-left icon-pad-right"></span>{{?}}{{? repo.isOss }}<span title="Open Source Solution" class="octicon octicon-globe icon-pad-left icon-pad-right"></span>{{?}}</td>
 
 						<td><a href="mailto:{{= repo.contacts.primary.email }}">{{= repo.contacts.primary.name }}</a></td>
 
