@@ -176,13 +176,14 @@ function loadRepoData(orgName) {
 			log.info('Getting repo commits...');
 			log.profile('repo commits');
 			_.forEach(repoData, (repo) => {
-				log.debug(`Getting commits for ${repo.full_name}`);
-				promises.push(loadRepositoryCommits(repo));
-				if (repoContacts[repo.owner.login.toLowerCase()][repo.name].monitoredBranches) {
-					repoContacts[repo.owner.login.toLowerCase()][repo.name].monitoredBranches.forEach((branchName) => {
-						log.debug(`Getting commits for ${repo.full_name}/${branchName}`);
-						promises.push(loadRepositoryCommits(repo), branchName);
+				let branchList = repoContacts[repo.owner.login.toLowerCase()][repo.name].monitoredBranches;
+				if (branchList) {
+					log.debug(`Getting commits for ${repo.full_name} from branches: ${branchList.join(', ')}`);
+					branchList.forEach((branchName) => {
+						promises.push(loadRepositoryCommits(repo, branchName));
 					});
+				} else {
+					promises.push(loadRepositoryCommits(repo));
 				}
 			});
 
@@ -564,13 +565,14 @@ function loadRepositoryPullRequests(repo) {
 function loadRepositoryCommits(repo, branchName) {
 	let deferred = Q.defer();
 
-	api.repositories.commits.getCommits(repo.owner.login, repo.name, { sha: branchName })
+	let params = branchName ? { sha: branchName } : undefined;
+	api.repositories.commits.getCommits(repo.owner.login, repo.name, params)
 		.then((data) => {
 			if (!repo.commits) 
 				repo.commits = data;
 			else
 				repo.commits = _.concat(repo.commits, data);
-			
+
 			deferred.resolve();
 		})
 		.catch((err) => {
