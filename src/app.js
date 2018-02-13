@@ -176,7 +176,14 @@ function loadRepoData(orgName) {
 			log.info('Getting repo commits...');
 			log.profile('repo commits');
 			_.forEach(repoData, (repo) => {
+				log.debug(`Getting commits for ${repo.full_name}`);
 				promises.push(loadRepositoryCommits(repo));
+				if (repoContacts[repo.owner.login.toLowerCase()][repo.name].monitoredBranches) {
+					repoContacts[repo.owner.login.toLowerCase()][repo.name].monitoredBranches.forEach((branchName) => {
+						log.debug(`Getting commits for ${repo.full_name}/${branchName}`);
+						promises.push(loadRepositoryCommits(repo), branchName);
+					});
+				}
 			});
 
 			return Promise.all(promises);
@@ -554,12 +561,16 @@ function loadRepositoryPullRequests(repo) {
 	return deferred.promise;
 }
 
-function loadRepositoryCommits(repo) {
+function loadRepositoryCommits(repo, branchName) {
 	let deferred = Q.defer();
 
-	api.repositories.commits.getCommits(repo.owner.login, repo.name)
+	api.repositories.commits.getCommits(repo.owner.login, repo.name, { sha: branchName })
 		.then((data) => {
-			repo.commits = data;
+			if (!repo.commits) 
+				repo.commits = data;
+			else
+				repo.commits = _.concat(repo.commits, data);
+			
 			deferred.resolve();
 		})
 		.catch((err) => {
