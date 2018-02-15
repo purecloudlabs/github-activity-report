@@ -176,14 +176,18 @@ function loadRepoData(orgName) {
 			log.info('Getting repo commits...');
 			log.profile('repo commits');
 			_.forEach(repoData, (repo) => {
-				let branchList = repoContacts[repo.owner.login.toLowerCase()][repo.name].monitoredBranches;
-				if (branchList) {
-					log.debug(`Getting commits for ${repo.full_name} from branches: ${branchList.join(', ')}`);
-					branchList.forEach((branchName) => {
-						promises.push(loadRepositoryCommits(repo, branchName));
-					});
+				if (repoContacts[repo.owner.login.toLowerCase()][repo.name]) {
+					let branchList = repoContacts[repo.owner.login.toLowerCase()][repo.name].monitoredBranches;
+					if (branchList) {
+						log.debug(`Getting commits for ${repo.full_name} from branches: ${branchList.join(', ')}`);
+						branchList.forEach((branchName) => {
+							promises.push(loadRepositoryCommits(repo, branchName));
+						});
+					} else {
+						promises.push(loadRepositoryCommits(repo));
+					}
 				} else {
-					promises.push(loadRepositoryCommits(repo));
+					throw new Error(`Missing repo contact information for ${repo.full_name}`);
 				}
 			});
 
