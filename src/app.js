@@ -208,9 +208,14 @@ function loadRepoData(orgName) {
 			log.info('Getting PR comments...');
 			log.profile('pr comments');
 			for (let i = 0; i < repoData.length; i++) {
-				repoData[i].pullRequests.forEach((pullRequest) => {
-					promises.push(loadPullRequestComments(pullRequest));
-				});
+				if (repoData[i].pullRequests) {
+					repoData[i].pullRequests.forEach((pullRequest) => {
+						promises.push(loadPullRequestComments(pullRequest));
+					});
+				} else {
+					log.error(`${repoData[i].full_name} is missing pull request data!`);
+					log.debug(JSON.stringify(repoData[i],null,2));
+				}
 			}
 
 			return Promise.all(promises);
