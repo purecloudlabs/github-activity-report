@@ -82,4 +82,4 @@ repoContacts['mypurecloud-opt-in'].forEach((member) => {
 console.log('Opt in emails: ');
 console.log(JSON.stringify(optInEmails,null,2));
 
-fs.writeFileSync(path.join(__dirname, '../cache/mypurecloud-opt-in.txt'), emailList.join(','));
+fs.writeFileSync(path.join(__dirname, '../cache/mypurecloud-opt-in.txt'), optInEmails.join(','));
