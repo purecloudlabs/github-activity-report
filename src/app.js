@@ -208,6 +208,7 @@ function loadRepoData(orgName) {
 			log.info('Getting PR comments...');
 			log.profile('pr comments');
 			for (let i = 0; i < repoData.length; i++) {
+				// It appears that sometimes the pullRequests object isn't set for some repos. No idea why.
 				if (repoData[i].pullRequests) {
 					repoData[i].pullRequests.forEach((pullRequest) => {
 						promises.push(loadPullRequestComments(pullRequest));
