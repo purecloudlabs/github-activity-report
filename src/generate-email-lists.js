@@ -18,28 +18,28 @@ let cc = [];
 // Build list of emails from watchlist
 repoData.forEach((repo) => {
 	if (repo.watchlist.length > 0) {
-		if (!repoContacts.mypurecloud[repo.name]) {
+		if (!repoContacts[repo.owner.login.toLowerCase()][repo.name]) {
 			// TODO: make a list of repos with no config and call it out in the email
 			log.error(`No configuration for ${repo.name}!`);
 			return;
 		}
 
-		if (!repoContacts.mypurecloud[repo.name].maintainers) 
-			repoContacts.mypurecloud[repo.name].maintainers = [];
-		if (!repoContacts.mypurecloud[repo.name].owners) 
-			repoContacts.mypurecloud[repo.name].owners = [];
+		if (!repoContacts[repo.owner.login.toLowerCase()][repo.name].maintainers) 
+			repoContacts[repo.owner.login.toLowerCase()][repo.name].maintainers = [];
+		if (!repoContacts[repo.owner.login.toLowerCase()][repo.name].owners) 
+			repoContacts[repo.owner.login.toLowerCase()][repo.name].owners = [];
 
-		if (repoContacts.mypurecloud[repo.name].maintainers.length == 0) {
-			if (repoContacts.mypurecloud[repo.name].owners.length == 0) {
+		if (repoContacts[repo.owner.login.toLowerCase()][repo.name].maintainers.length == 0) {
+			if (repoContacts[repo.owner.login.toLowerCase()][repo.name].owners.length == 0) {
 				log.error(`${repo.name} is on the watchlist and does not have owners or maintainers defined!`);
 				// TODO: make a list of repos with no contacts and call it out in the email
 			} else {
 				log.warn(`${repo.name} is on the watchlist and does not have maintainers defined! Addressing owners instead.`);
-				to.pushArray(repoContacts.mypurecloud[repo.name].owners);
+				to.pushArray(repoContacts[repo.owner.login.toLowerCase()][repo.name].owners);
 			}
 		} else {
 			let maintainerContacts = [];
-			repoContacts.mypurecloud[repo.name].maintainers.forEach((maintainer) => {
+			repoContacts[repo.owner.login.toLowerCase()][repo.name].maintainers.forEach((maintainer) => {
 				if (githubUsers[maintainer]) {
 					maintainerContacts.push(githubUsers[maintainer]);
 				} else {
