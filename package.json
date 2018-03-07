@@ -4,7 +4,7 @@
   "description": "A node script to generate a report of activity in a github group",
   "main": "src/app.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "dev": "source local/setEnv.sh && node src/app.js"
   },
   "author": "Genesys Developer Evangelists",
   "license": "MIT",
@@ -17,14 +17,12 @@
     "js-yaml": "^3.10.0",
     "lodash": "^4.17.4",
     "lognext": "0.0.3",
+    "moment": "^2.21.0",
     "moment-timezone": "^0.5.13",
     "q": "^1.5.0",
     "request": "^2.83.0",
     "request-promise": "^4.2.2",
     "url-join": "^2.0.2",
     "yamljs": "^0.3.0"
-  },
-  "scripts": {
-  	"dev": "source local/setEnv.sh && node src/app.js"
   }
 }
