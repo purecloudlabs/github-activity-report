@@ -176,18 +176,19 @@ function loadRepoData(orgName) {
 			log.info('Getting repo commits...');
 			log.profile('repo commits');
 			_.forEach(repoData, (repo) => {
-				if (repoContacts[repo.owner.login.toLowerCase()][repo.name]) {
-					let branchList = repoContacts[repo.owner.login.toLowerCase()][repo.name].monitoredBranches;
-					if (branchList) {
-						log.debug(`Getting commits for ${repo.full_name} from branches: ${branchList.join(', ')}`);
-						branchList.forEach((branchName) => {
-							promises.push(loadRepositoryCommits(repo, branchName));
-						});
-					} else {
-						promises.push(loadRepositoryCommits(repo));
-					}
+				if (!repoContacts[repo.owner.login.toLowerCase()][repo.name])
+					log.warn(`Missing repo contact information for ${repo.full_name}`);
+
+				let branchList = repoContacts[repo.owner.login.toLowerCase()][repo.name]
+					? repoContacts[repo.owner.login.toLowerCase()][repo.name].monitoredBranches
+					: undefined;
+				if (branchList) {
+					log.debug(`Getting commits for ${repo.full_name} from branches: ${branchList.join(', ')}`);
+					branchList.forEach((branchName) => {
+						promises.push(loadRepositoryCommits(repo, branchName));
+					});
 				} else {
-					throw new Error(`Missing repo contact information for ${repo.full_name}`);
+					promises.push(loadRepositoryCommits(repo));
 				}
 			});
 
@@ -450,6 +451,11 @@ function generateRepositoryMetaProperties(repo) {
 				repo.contacts.maintainers.push({name: maintainer, email: maintainer });
 			}
 		});
+	}
+
+	if (!repo.contacts) {
+		log.warn(`Missing contact info for ${repo.name}`);
+		repo.contacts = { maintainers: [], owners: [] };
 	}
 
 	if (repo.contacts.maintainers && repo.contacts.maintainers.length > 0)
