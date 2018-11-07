@@ -443,14 +443,18 @@ function generateRepositoryMetaProperties(repo) {
 		};
 
 		// Populate maintaner info
-		repoContacts[repo.owner.login.toLowerCase()][repo.name].maintainers.forEach((maintainer) => {
-			if (githubUsers[maintainer]) {
-				repo.contacts.maintainers.push(githubUsers[maintainer]);
-			} else {
-				log.warn(`Unable to find contact info for ${maintainer}!`);
-				repo.contacts.maintainers.push({name: maintainer, email: maintainer });
-			}
-		});
+		if (repoContacts[repo.owner.login.toLowerCase()][repo.name].maintainers) {
+			repoContacts[repo.owner.login.toLowerCase()][repo.name].maintainers.forEach((maintainer) => {
+				if (githubUsers[maintainer]) {
+					repo.contacts.maintainers.push(githubUsers[maintainer]);
+				} else {
+					log.warn(`Unable to find contact info for ${maintainer}!`);
+					repo.contacts.maintainers.push({name: maintainer, email: maintainer });
+				}
+			});
+		} else {
+			log.warn(`Missing maintainer config. Unable to process maintainers for ${repo.name}`);
+		}
 	}
 
 	if (!repo.contacts) {
