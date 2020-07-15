@@ -14,7 +14,7 @@
     "fs-extra": "^4.0.2",
     "github-api-promise": "^1.10.0",
     "instadate": "^0.5.0",
-    "js-yaml": "^3.10.0",
+    "js-yaml": "^3.13.1",
     "lodash": "^4.17.19",
     "lognext": "0.0.3",
     "moment": "^2.21.0",
